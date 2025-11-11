@@ -1,100 +1,79 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import google.generativeai as genai
-from dotenv import load_dotenv
+import joblib
+import numpy as np
 import os
 
 app = Flask(__name__)
 CORS(app)
 
-# Load environment variables
-load_dotenv()
-api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    print("Warning: GEMINI_API_KEY not found in environment. Check .env file.")
-genai.configure(api_key=api_key)
-
-# Initialize Gemini model
+# Load trained KNN model and dataset
 try:
-    model = genai.GenerativeModel('gemini-1.5-pro')
+    knn = joblib.load('model/career_model.pkl')
+    df = joblib.load('model/dataset.pkl')
+    print("✅ Model and dataset loaded successfully.")
 except Exception as e:
-    print(f"Failed to initialize Gemini model: {e}")
-    model = None
+    print(f"❌ Failed to load model or dataset: {e}")
+    knn = None
+    df = None
 
-# Endpoint: Profile to Career Recommendation
+# Convert profile into encoded vector
+def encode_profile(profile):
+    skills_encoded = [1 if any(skill in profile['skills'] for skill in skill_list) else 0 for skill_list in df['skills']]
+    interests_encoded = [1 if any(interest in profile['interests'] for interest in interest_list) else 0 for interest_list in df['interests']]
+    education_encoded = [1 if profile['education'] == edu else 0 for edu in df['education']]
+    experience_encoded = [1 if profile['experience'] == exp else 0 for exp in df['experience']]
+    return np.array(skills_encoded + interests_encoded + education_encoded + experience_encoded).reshape(1, -1)
+
+# Career Recommendation Endpoint
 @app.route('/api/profile', methods=['POST'])
-def update_profile():
+def recommend_career():
     try:
         profile = request.json.get('profile', {})
         if not profile:
             return jsonify({'error': 'No profile data received'}), 400
 
-        skills = profile.get('skills', ['Not specified'])
-        interests = profile.get('interests', ['Not specified'])
-        education = profile.get('education', 'Not specified')
-        experience = profile.get('experience', 'Not specified')
+        if knn is None or df is None:
+            return jsonify({'error': 'Model or dataset not available'}), 500
 
-        # Tightly scoped prompt with no invitation for questions
-        prompt = f"""
-        Given the user profile below, suggest one suitable career role.
+        encoded = encode_profile(profile)
+        distance, index = knn.kneighbors(encoded)
+        match_index = index[0][0]
 
-        Respond with:
-        - Career Title
-        - 3 to 4 key responsibilities
-        - How user's skills and interests match this role
-        - Growth opportunities
-        - 2 actionable next steps to pursue this role
+        recommended = {
+            'career': df.iloc[match_index]['career'],
+            'mentor': df.iloc[match_index]['mentor']
+        }
 
-        Avoid questions or follow-ups. Use "-" for bullets. Keep it short and helpful.
-
-        User Profile:
-        - Skills: {', '.join(skills)}
-        - Interests: {', '.join(interests)}
-        - Education: {education}
-        - Experience: {experience}
-        """
-
-        if not model:
-            return jsonify({'error': 'Model not initialized'}), 500
-        response = model.generate_content(prompt)
-        career_description = response.text.strip()
-
-        return jsonify({'career_description': career_description})
+        return jsonify(recommended)
     except Exception as e:
-        print(f"Error in update_profile: {e}")
+        print(f"❌ Error in /api/profile: {e}")
         return jsonify({'error': str(e)}), 500
 
-# Endpoint: Mentor Chat
+# Mentor Chat Endpoint
 @app.route('/api/chat', methods=['POST'])
 def chat_with_mentor():
     try:
-        user_message = request.json.get('message', '')
+        user_message = request.json.get('message', '').lower()
         if not user_message:
             return jsonify({'error': 'No message provided'}), 400
 
-        prompt = f"""
-        You are a professional career mentor.
+        # Rule-based offline responses
+        if 'growth' in user_message:
+            response = "AI is projected to grow at a rate of 12% annually until 2030."
+        elif 'demand' in user_message:
+            response = "Data Science and DevOps roles are in high demand currently."
+        elif 'salary' in user_message:
+            response = "AI Engineers in India earn between ₹8L to ₹25L per year."
+        elif 'skills' in user_message:
+            response = "Top in-demand skills: Python, Cloud, DevOps, Cybersecurity, React."
+        else:
+            response = "Please ask about growth, demand, salary, or skills for career insights."
 
-        Respond clearly and helpfully to the user's question below:
-        - No follow-up questions.
-        - No vague answers.
-        - Use "-" for bullet points if needed.
-        - Keep the reply concise and practical.
-
-        User Question:
-        {user_message}
-        """
-
-        if not model:
-            return jsonify({'error': 'Model not initialized'}), 500
-        response = model.generate_content(prompt)
-        mentor_response = response.text.strip()
-
-        return jsonify({'response': mentor_response})
+        return jsonify({'response': response})
     except Exception as e:
-        print(f"Error in chat_with_mentor: {e}")
+        print(f"❌ Error in /api/chat: {e}")
         return jsonify({'error': str(e)}), 500
 
-# Start the Flask app
 if __name__ == '__main__':
     app.run(debug=True, port=5000)
