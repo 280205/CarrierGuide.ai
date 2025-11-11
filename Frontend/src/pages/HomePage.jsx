@@ -3,7 +3,8 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const HomePage = () => {
-  const { selectedUser } = useChatStore();
+  // initialize chat store (selectedUser not used on this page)
+  useChatStore();
   const navigate = useNavigate();
 
   const [contact, setContact] = useState({
@@ -48,7 +49,7 @@ const HomePage = () => {
     },
     {
       question: "What should I do if I encounter a problem?",
-      answer: "Contact our support team at support@careerguide.ai, and we’ll resolve your issue within 24 hours."
+      answer: "Contact our support team at support@careerguide.ai, and we will resolve your issue within 24 hours."
     }
   ];
 
@@ -90,7 +91,7 @@ const HomePage = () => {
         <section className="bg-white rounded-xl shadow p-8 hover:shadow-xl transition">
           <h3 className="text-2xl font-semibold mb-4 text-purple-800">About CareerGuide</h3>
           <p className="mb-6 leading-relaxed text-gray-700">
-          CareerGuide.ai is your trusted partner in building a meaningful and successful career. Leveraging the power of advanced AI, we provide personalized career recommendations, real-time mentorship, and curated learning resources tailored to your unique background, skills, and aspirations. Whether you're a student exploring options, a professional looking to switch paths, or someone trying to upskill, our platform offers clarity and confidence every step of the way. From analyzing your profile to suggesting career roles, identifying skill gaps, and offering actionable advice through our virtual mentor, CareerGuide.ai is designed to simplify decision-making and empower you with insights that matter. Our mission is to make professional guidance accessible, adaptive, and impactful—because everyone deserves a career they love and believe in.
+          CareerGuide.ai is your trusted partner in building a meaningful and successful career. Leveraging the power of advanced AI, we provide personalized career recommendations, real-time mentorship, and curated learning resources tailored to your unique background, skills, and aspirations. Whether you are a student exploring options, a professional looking to switch paths, or someone trying to upskill, our platform offers clarity and confidence every step of the way. From analyzing your profile to suggesting career roles, identifying skill gaps, and offering actionable advice through our virtual mentor, CareerGuide.ai is designed to simplify decision-making and empower you with insights that matter. Our mission is to make professional guidance accessible, adaptive, and impactful—because everyone deserves a career they love and believe in.
           </p>
           <img
             src="https://img.freepik.com/premium-vector/business-coach-speaking-front-audience-mentor-presenting-charts-reports-seminar-training-presentation-conference-leadership-mentoring-concept-cartoon-flat-vector-illustration_341509-2414.jpg?w=1380"
@@ -131,7 +132,7 @@ const HomePage = () => {
                 className="w-34 h-40 mx-auto mb-4 rounded-lg"
               />
               <p className="text-gray-700">3. Take Action & Grow :
-              Follow the suggested next steps, whether it's learning a new skill, exploring a job role, or building a project.</p>
+              Follow the suggested next steps, whether it is learning a new skill, exploring a job role, or building a project.</p>
             </div>
           </div>
         </section>

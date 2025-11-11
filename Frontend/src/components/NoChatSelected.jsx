@@ -17,9 +17,9 @@ const NoChatSelected = () => {
         </div>
 
         {/* Welcome Text */}
-        <h2 className="text-2xl font-bold">India's Biggest Stock Market Platform</h2>
+        <h2 className="text-2xl font-bold">A leading platform for the Indian market</h2>
         <p className="text-base-content/60">
-          highlighting its significance in the Indian stock market.
+          Highlighting opportunities and insights for users across India.
         </p>
       </div>
     </div>

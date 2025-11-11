@@ -1,0 +1,5 @@
+node_modules
+.git
+npm-debug.log
+.env
+Backend/ml-model/model
