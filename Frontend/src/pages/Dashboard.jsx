@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Aurora from '../pages/Aurora'; // Adjust path if needed
-import './RateYourself.css'; // Ensure this path is correct
+import './rateyourself.css'; // Ensure this path is correct
 
 const RateYourself = () => {
   const [profile, setProfile] = useState({
